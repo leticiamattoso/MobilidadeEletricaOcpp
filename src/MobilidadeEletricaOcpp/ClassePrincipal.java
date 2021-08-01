@@ -1,5 +1,6 @@
 package MobilidadeEletricaOcpp;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 /**
@@ -9,8 +10,10 @@ import java.util.Scanner;
 public class ClassePrincipal {
 
     public static void main(String[] args) {
+        boolean medir = false;
 
         ControleLampada lampada = new ControleLampada();
+        ObtemGasto obt = new ObtemGasto();
 
         int numero = -1;
         Scanner leitor = new Scanner(System.in);
@@ -29,5 +32,15 @@ public class ClassePrincipal {
 
         //Deligando GPIO
         lampada.DesligarGPIO();
+
+        //Chamando classe ObterGasto 
+        if (medir) {
+            try {
+                ObtemGasto.init();
+            } catch (IOException | InterruptedException ex) {
+                System.out.println("call erro => " + ex);
+            }
+        }
     }
+
 }
