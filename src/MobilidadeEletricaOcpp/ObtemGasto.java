@@ -14,11 +14,11 @@ public class ObtemGasto {
     // SPI device
     public static SpiDevice spi = null;
 
-    // ADC channel count
+    // ADC contagem de canais
     public static short ADC_CHANNEL_COUNT = 8;  // MCP3004=4, MCP3008=8
 
     /**
-     * Read data via SPI bus from MCP3002 chip.
+     * Leia os dados via barramento SPI do chip MCP3002.
      *
      * @throws IOException
      * @throws java.lang.InterruptedException
@@ -26,55 +26,51 @@ public class ObtemGasto {
     public static void read() throws IOException, InterruptedException {
         for (short channel = 0; channel < ADC_CHANNEL_COUNT; channel++) {
             int conversion_value = getConversionValue(channel);
-            System.out.println(String.format(" | %04d", conversion_value)); // print 4 digits with leading zeros
+            System.out.println(String.format(" | %04d", conversion_value)); // imprimir 4 dígitos com zeros à esquerda
         }
         System.out.println(" |\r");
         Thread.sleep(250);
     }
 
     /**
-     * Communicate to the ADC chip via SPI to get single-ended conversion value
-     * for a specified channel.
+     * Comunique-se com o chip ADC via SPI para obter o valor de conversão de
+     * ponta única para um canal especificado.
      *
-     * @param channel analog input channel on ADC chip
-     * @return conversion value for specified analog input channel
+     * @param channel canal de entrada analógica no chip ADC
+     * @return valor de conversão para o canal de entrada analógica especificado
      * @throws IOException
+     *
+     *
      */
     public static int getConversionValue(short channel) throws IOException {
 
-        // create a data buffer and initialize a conversion request payload
+        // crie um buffer de dados e inicialize uma carga útil de solicitação de conversão
         byte data[] = new byte[]{
-            (byte) 0b00000001, // first byte, start bit
-            (byte) (0b10000000 | (((channel & 7) << 4))), // second byte transmitted -> (SGL/DIF = 1, D2=D1=D0=0)
-            (byte) 0b00000000 // third byte transmitted....don't care
+            (byte) 0b00000001, // primeiro byte, começa o bit
+            (byte) (0b10000000 | (((channel & 7) << 4))), // segundo byte transmitido -> (SGL / DIF = 1, D2 = D1 = D0 = 0)
+            (byte) 0b00000000 //terceiro byte transmitido ... não importa
         };
 
-        // send conversion request to ADC chip via SPI channel
+        // enviar solicitação de conversão para chip ADC via canal SPI
         byte[] result = spi.write(data);
 
-        // calculate and return conversion value from result bytes
-        int value = (result[1] << 8) & 0b1100000000; //merge data[1] & data[2] to get 10-bit result
+        // calcular e retornar o valor de conversão dos bytes de resultado
+        int value = (result[1] << 8) & 0b1100000000; //mesclar dados [1] e dados [2] para obter o resultado de 10 bits
         value |= (result[2] & 0xff);
         return value;
     }
 
     public static void init() throws IOException, InterruptedException {
-        // This SPI example is using the Pi4J SPI interface to communicate with
-        // the SPI hardware interface connected to a MCP3004/MCP3008 AtoD Chip.
+        // Este exemplo de SPI está usando a interface Pi4J SPI para se comunicar com
+        // a interface de hardware SPI conectada a um chip MCP3004 / MCP3008 AtoD.
         //
-        // Please make sure the SPI is enabled on your Raspberry Pi via the
-        // raspi-config utility under the advanced menu option.
+        // Certifique-se de que o SPI esteja ativado em seu Raspberry Pi por meio do
+        // utilitário raspi-config na opção de menu avançado.
         //
-        // see this blog post for additional details on SPI and WiringPi
-        // http://wiringpi.com/reference/spi-library/
-        //
-        // see the link below for the data sheet on the MCP3004/MCP3008 chip:
-        // http://ww1.microchip.com/downloads/en/DeviceDoc/21294E.pdf        
-
-        // create SPI object instance for SPI for communication
+        // cria instância de objeto SPI para SPI para comunicação
         spi = SpiFactory.getInstance(SpiChannel.CS0,
-                SpiDevice.DEFAULT_SPI_SPEED, // default spi speed 1 MHz
-                SpiDevice.DEFAULT_SPI_MODE); // default spi mode 0
+                SpiDevice.DEFAULT_SPI_SPEED, // velocidade spi padrão de 1 MHz
+                SpiDevice.DEFAULT_SPI_MODE); //modo spi padrão 0
         try {
             read();
         } catch (InterruptedException ex) {
