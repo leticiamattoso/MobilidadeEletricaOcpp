@@ -33,7 +33,7 @@ public class ClassePrincipal {
         //Deligando GPIO
         lampada.DesligarGPIO();
 
-        //Chamando classe ObterGasto 
+        //Chamando classe ObterGasto
         if (medir) {
             try {
                 ObtemGasto.init();
